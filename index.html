@@ -52,7 +52,7 @@
       }
       .footer .initiative {
         font-style: italic;
-        margin-top: 16px;
+        margin-top: 12px;
       }
       table {
         border-spacing: 0;
@@ -80,7 +80,8 @@
   <body>
     <div class="content">
       <h1>PrimaSTEM firmware update</h1>
-      <p>Select part of product for update: Robot or Control device</p>
+      <p>1. Plug in your device to a USB port (Make sure your USB-C cable supports data transfer).</p>
+      <p>2. Select part of product for update: Robot or Control device, hit button and select the correct COM port (usually it's 3, 4 or 5).</p>
       <ul class="radios">
         <li>
           <label><input type="radio" name="type" value="robot" /> Robot</label>
@@ -94,6 +95,7 @@
       </p>
 
       <div class="footer">
+        <p>If you don’t see the buttons after select, than you’re not using Chrome or Edge browser with Web-serial plugin.</p>
         <p>This is a firmware update web page for <a href="https://primastem.com/">PrimaSTEM</a> devices.</p>
     </div>
     <script>
