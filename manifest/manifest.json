@@ -1,0 +1,16 @@
+{
+    "name": "PrimaSTEM Robot",
+    "builds": [
+      {
+        "chipFamily": "ESP32",
+        "parts": [
+          { "path": "firmware.bin", "offset": 0 }
+        ]
+      },
+      {
+        "chipFamily": "ESP32-S3",
+        "parts": [
+          { "path": "firmware.bin", "offset": 0 }
+        ]
+      }    ]
+  }
