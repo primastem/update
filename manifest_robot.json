@@ -6,7 +6,8 @@
         "chipFamily": "ESP32",
         "improv": true,
         "parts": [
-          { "path": "firmware/tasmota32.bin", "offset": 0 }
+          { "path": "firmware/wled_boot.bin", "offset": 0 },
+          { "path": "firmware/WLED_ESP32.bin", "offset": 10000 }
         ]
       },
       {
