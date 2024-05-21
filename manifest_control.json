@@ -6,8 +6,9 @@
         "chipFamily": "ESP32",
         "improv": true,
         "parts": [
-          { "path": "firmware/wled_boot.bin", "offset": 0 },
-          { "path": "firmware/WLED_ESP32.bin", "offset": 65536 }
+          { "path": "firmware/control/bootloader.bin", "offset": 4096 },
+          { "path": "firmware/control/partition-table.bin", "offset": 32768 },
+          { "path": "firmware/control/control_prima_stem_esp32.bin", "offset": 65536 }
         ]
       },
       {
