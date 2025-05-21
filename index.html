@@ -2,17 +2,21 @@
 <html>
   <head>
     <meta charset="utf-8" />
-    <title>PrimaSTEM update</title>
+    <title>PrimaSTEM update firmware</title>
     <meta
       name="description"
       content="Easily allow users to install PrimaSTEM firmware on the web."
     />
     <meta name="viewport" content="width=device-width" />
     <meta name="color-scheme" content="dark light" />
+	
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Gidole&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Display:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto+Flex:opsz,wght@8..144,100..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&family=Roboto+Slab:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik+Doodle+Shadow&display=swap" rel="stylesheet">
+	
     <style>
       body {
-        font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI",
-          Roboto, Ubuntu, sans-serif;
+        font-family: 'Noto Sans Display', system-ui, sans-serif;
         padding: 0;
         margin: 0;
         line-height: 1.4;
@@ -84,10 +88,13 @@
       <p>2. Select part of product for update: Robot or Control device.</p>
       <ul class="radios">
         <li>
-          <label><input type="radio" name="type" value="robot" /> Robot</label>
+          <label><input type="radio" name="type" value="robot" />MVP Robot</label>
         </li>
         <li>
-          <label><input type="radio" name="type" value="control" /> Control</label>
+          <label><input type="radio" name="type" value="control" />MVP Control</label>
+        </li>
+		<li>
+          <label><input type="radio" name="type" value="control15" />MVP Control default step 15 cm.</label>
         </li>
       </ul>
       <p>3. Hit button BELOW and select the correct USB-COM port, pick your device (Usually NOT 1. This step requires drivers, presumably you already have them if you are here though. If you don’t see the buttons after select part of product, than you’re not using Chrome or Edge browser.)</p>
@@ -97,6 +104,7 @@
 
       <div class="footer">
         <p>This is a firmware update web page for <a href="https://primastem.com/">PrimaSTEM</a> devices.</p>
+		<p>Documentation placed here - <a href="https://docs.primastem.com/">docs.PrimaSTEM.com</a></p>
     </div>
     <script>
       document.querySelectorAll('input[name="type"]').forEach(radio =>
