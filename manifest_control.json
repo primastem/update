@@ -6,9 +6,9 @@
         "chipFamily": "ESP32",
         "improv": true,
         "parts": [
-          { "path": "firmware/control/bootloader.bin", "offset": 4096 },
-          { "path": "firmware/control/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/control/control_prima_stem_esp32.bin", "offset": 65536 }
+          { "path": "firmware/control/esp32/bootloader.bin", "offset": 4096 },
+          { "path": "firmware/control/esp32/partition-table.bin", "offset": 32768 },
+          { "path": "firmware/control/esp32/control_prima_stem_esp32.bin", "offset": 65536 }
         ]
       },
       {
