@@ -3,12 +3,13 @@
     "new_install_prompt_erase": true,
     "builds": [
       {
-        "chipFamily": "ESP32",
-        "improv": true,
-        "parts": [
-          { "path": "firmware/test/bootloader.bin", "offset": 4096 },
+        "chipFamily": "ESP32-S3",
+"improv": true,
+               "parts": [
+          { "path": "firmware/test/bootloader.bin", "offset": 0 },
           { "path": "firmware/test/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/test/control_prima_stem_esp32.bin", "offset": 65536 }
+          { "path": "firmware/test/prima_stem_robot_esp32s3.bin", "offset": 65536 },
+          { "path": "firmware/test/storage.bin", "offset": 1114112 }
         ]
-      }   ]
+      }    ]
   }
