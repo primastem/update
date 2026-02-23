@@ -1,0 +1,15 @@
+{
+    "name": "Control update",
+    "new_install_prompt_erase": true,
+    "builds": [
+      {
+        "chipFamily": "ESP32-S3",
+       "improv": true,
+       "parts": [
+          { "path": "firmware/development/control/bootloader.bin", "offset": 0 },
+          { "path": "firmware/development/control/partition-table.bin", "offset": 32768 },
+          { "path": "firmware/development/control/prima_stem_controll_esp32s3.bin", "offset": 65536 },
+          { "path": "firmware/development/control/storage.bin", "offset": 1114112 }
+        ]
+      }    ]
+  }
