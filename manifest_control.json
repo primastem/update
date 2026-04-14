@@ -17,8 +17,8 @@
        "parts": [
           { "path": "firmware/control/s3/bootloader.bin", "offset": 0 },
           { "path": "firmware/control/s3/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/control/s3/prima_stem_controll_esp32s3.bin", "offset": 65536 },
-          { "path": "firmware/control/s3/storage.bin", "offset": 1114112 }
+          { "path": "firmware/control/s3/control.bin", "offset": 65536 },
+          { "path": "firmware/control/s3/en/storage.bin", "offset": 1114112 }
         ]
       }    ]
   }

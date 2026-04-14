@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>PrimaSTEM update firmware</title>
+    <meta
+      name="description"
+      content="Easily allow users to install PrimaSTEM firmware on the web."
+    />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="color-scheme" content="dark light" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Amatic+SC:wght@400;700&family=Gidole&family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Noto+Sans+Display:ital,wght@0,100..900;1,100..900&family=Noto+Sans+Mono:wght@100..900&family=Noto+Sans:ital,wght@0,100..900;1,100..900&family=Noto+Serif:ital,wght@0,100..900;1,100..900&family=Roboto+Condensed:ital,wght@0,100..900;1,100..900&family=Roboto+Flex:opsz,wght@8..144,100..1000&family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Roboto+Serif:ital,opsz,wght@0,8..144,100..900;1,8..144,100..900&family=Roboto+Slab:wght@100..900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Rubik+Doodle+Shadow&display=swap" rel="stylesheet">
+
+    <style>
+      body {
+        font-family: 'Noto Sans Display', system-ui, sans-serif;
+        padding: 0;
+        margin: 0;
+        line-height: 1.4;
+      }
+      .content {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 12px;
+      }
+      h2 {
+        margin-top: 2em;
+      }
+      h3 {
+        margin-top: 1.5em;
+      }
+      a {
+        color: #5aa02c;
+      }
+      .invisible {
+        visibility: hidden;
+      }
+      .hidden {
+        display: none;
+      }
+      esp-web-install-button[install-unsupported] {
+        visibility: inherit;
+      }
+      .content pre {
+        max-width: 100%;
+        overflow-y: scroll;
+      }
+      .footer {
+        margin-top: 24px;
+        border-top: 1px solid #ccc;
+        padding-top: 24px;
+        text-align: left;
+      }
+      .footer .initiative {
+        font-style: italic;
+        margin-top: 16px;
+      }
+      table {
+        border-spacing: 0;
+      }
+      td {
+        padding: 8px;
+        border-bottom: 1px solid #ccc;
+      }
+      .radios li {
+        list-style: none;
+        line-height: 2em;
+      }
+      .radios .group-label {
+        font-weight: bold;
+        margin-top: 0.5em;
+        color: #888;
+        font-size: 0.85em;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+      }
+      .radios .separator {
+        border: none;
+        border-top: 1px solid #ccc;
+        margin: 8px 0;
+      }
+      @media (prefers-color-scheme: dark) {
+        body {
+          background-color: #333;
+          color: #fff;
+        }
+        a {
+          color: #5aa02c;
+        }
+        .radios .group-label {
+          color: #aaa;
+        }
+        .radios .separator {
+          border-top-color: #555;
+        }
+      }
+    </style>
+    <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+  </head>
+  <body>
+    <div class="content">
+      <h1>Update PrimaSTEM firmware</h1>
+      <p>1. Using Chrome or Edge, plug in your device to a USB port (make sure your USB-C cable supports data transfer).</p>
+      <p>2. Select your device and language:</p>
+      <ul class="radios">
+        <li class="group-label">Robot</li>
+        <li><label><input type="radio" name="type" value="robot_en" /> Robot — English</label></li>
+        <li><label><input type="radio" name="type" value="robot_fr" /> Robot — Français</label></li>
+        <li><label><input type="radio" name="type" value="robot_ru" /> Robot — Русский</label></li>
+        <li><hr class="separator"></li>
+        <li class="group-label">Control board</li>
+        <li><label><input type="radio" name="type" value="control_en" /> Control board — English</label></li>
+        <li><label><input type="radio" name="type" value="control_fr" /> Control board — Français</label></li>
+        <li><label><input type="radio" name="type" value="control_ru" /> Control board — Русский</label></li>
+        <li><hr class="separator"></li>
+        <li class="group-label">Development / test</li>
+        <li><label><input type="radio" name="type" value="devrobot" /> Robot — development test version</label></li>
+        <li><label><input type="radio" name="type" value="devcontrol" /> Control board — development test version</label></li>
+      </ul>
+      <p>3. Hit button (Connect) BELOW and select the correct USB-COM port. (This step requires Chrome or Edge browser.)</p>
+      <p class="button-row" align="left">
+        <esp-web-install-button class="invisible"></esp-web-install-button>
+      </p>
+
+      <div class="footer">
+        <p>This is a firmware update web page for <a href="https://primastem.com/">PrimaSTEM</a> devices.</p>
+        <p>Documentation — <a href="https://docs.primastem.com/">docs.PrimaSTEM.com</a></p>
+      </div>
+    </div>
+
+    <script>
+      let currentBlobUrl = null;
+
+      function detectLocale() {
+        const lang = (navigator.language || 'en').toLowerCase();
+        if (lang.startsWith('fr')) return 'fr';
+        if (lang.startsWith('ru')) return 'ru';
+        return 'en';
+      }
+
+      async function setManifest(type, locale) {
+        const button = document.querySelector('esp-web-install-button');
+        button.classList.add('invisible');
+
+        if (currentBlobUrl) {
+          URL.revokeObjectURL(currentBlobUrl);
+          currentBlobUrl = null;
+        }
+
+        if (!locale) {
+          button.manifest = `./manifest_${type}.json`;
+          button.classList.remove('invisible');
+        } else {
+          try {
+            const response = await fetch(`./manifest_${type}.json`);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const data = await response.json();
+            const base = new URL('./', window.location.href).href;
+
+            for (const build of data.builds) {
+              for (const part of build.parts) {
+                part.path = new URL(part.path, base).href;
+                if (build.chipFamily === 'ESP32-S3') {
+                  part.path = part.path.replace(/\/[a-z]{2}\/storage\.bin/, `/${locale}/storage.bin`);
+                }
+              }
+            }
+
+            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+            currentBlobUrl = URL.createObjectURL(blob);
+            button.manifest = currentBlobUrl;
+          } catch (err) {
+            console.warn('Dynamic manifest failed, using default:', err);
+            button.manifest = `./manifest_${type}.json`;
+          }
+          button.classList.remove('invisible');
+        }
+      }
+
+      document.querySelectorAll('input[name="type"]').forEach(radio =>
+        radio.addEventListener('change', () => {
+          const value = radio.value;
+          if (value.startsWith('dev')) {
+            setManifest(value, null);
+          } else {
+            const [device, locale] = value.split('_');
+            setManifest(device, locale);
+          }
+        })
+      );
+
+      // Auto-detect browser language, pre-select Robot with detected locale
+      const detectedLocale = detectLocale();
+      const defaultRadio = document.querySelector(`input[value="robot_${detectedLocale}"]`);
+      if (defaultRadio) {
+        defaultRadio.checked = true;
+        defaultRadio.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+    </script>
+  </body>
+</html>

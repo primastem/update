@@ -18,8 +18,8 @@
                "parts": [
           { "path": "firmware/robot/s3/bootloader.bin", "offset": 0 },
           { "path": "firmware/robot/s3/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/robot/s3/prima_stem_robot_esp32s3.bin", "offset": 65536 },
-          { "path": "firmware/robot/s3/storage.bin", "offset": 1114112 }
+          { "path": "firmware/robot/s3/robot.bin", "offset": 65536 },
+          { "path": "firmware/robot/s3/en/storage.bin", "offset": 1114112 }
         ]
       }    ]
   }
