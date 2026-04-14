@@ -63,17 +63,6 @@ def build_lang(lang: str) -> bool:
     return ok
 
 
-def update_languages_json():
-    """Rebuild languages.json from all language folders that have storage.bin built."""
-    built = sorted(
-        d.name for d in (REPO_ROOT / "firmware/robot/s3").iterdir()
-        if d.is_dir() and (d / "storage.bin").exists() and d.name not in ("arhiv",)
-    )
-    langs = [{"code": code, "name": LANG_NAMES.get(code, code)} for code in built]
-    LANGS_JSON.write_text(json.dumps(langs, ensure_ascii=False, indent=2), encoding="utf-8")
-    print(f"Updated languages.json: {[l['code'] for l in langs]}")
-
-
 def main():
     if not SPIFFSGEN.exists():
         print("[ERROR] tools/spiffsgen.py not found.")

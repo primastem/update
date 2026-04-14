@@ -112,7 +112,7 @@
       <div class="step hidden" id="lang-step">
         <div class="step-label">3. Select language:</div>
         <ul class="lang-grid" id="lang-grid">
-          <!-- populated dynamically from languages.json -->
+          <!-- populated dynamically on load -->
         </ul>
       </div>
 
@@ -198,6 +198,9 @@
             selectedLang = defaultLang;
           }
         });
+
+        // If device was already selected before languages loaded, trigger update now
+        if (selectedDevice) updateManifest();
       }
 
       async function updateManifest() {
