@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
 Generate SPIFFS storage.bin for firmware from language source folders.
+Also updates languages.json used by the web UI to populate the language selector.
 
 Usage:
     python tools/build_storage.py           # build all languages found in source/
@@ -14,15 +15,18 @@ Prerequisites:
 Output:
     firmware/robot/s3/{lang}/storage.bin
     firmware/control/s3/{lang}/storage.bin
+    languages.json  (auto-updated, used by index.html)
 """
 
 import sys
+import json
 import subprocess
 from pathlib import Path
 
-REPO_ROOT = Path(__file__).parent.parent
+REPO_ROOT  = Path(__file__).parent.parent
 SOURCE_DIR = REPO_ROOT / "source"
-SPIFFSGEN   = Path(__file__).parent / "spiffsgen.py"
+SPIFFSGEN  = Path(__file__).parent / "spiffsgen.py"
+LANGS_JSON = REPO_ROOT / "languages.json"
 
 # Must match firmware partition table and menuconfig
 PARTITION_SIZE = "0x800000"
@@ -39,6 +43,24 @@ TARGETS = [
     "firmware/robot/s3",
     "firmware/control/s3",
 ]
+
+# Display names for known language codes
+LANG_NAMES = {
+    "en": "English",
+    "fr": "Français",
+    "ru": "Русский",
+    "de": "Deutsch",
+    "es": "Español",
+    "it": "Italiano",
+    "pt": "Português",
+    "nl": "Nederlands",
+    "pl": "Polski",
+    "tr": "Türkçe",
+    "zh": "中文",
+    "ja": "日本語",
+    "ko": "한국어",
+    "ar": "العربية",
+}
 
 
 def build_lang(lang: str) -> bool:
@@ -63,6 +85,17 @@ def build_lang(lang: str) -> bool:
     return ok
 
 
+def update_languages_json():
+    """Rebuild languages.json from all language folders that have storage.bin built."""
+    built = sorted(
+        d.name for d in (REPO_ROOT / "firmware/robot/s3").iterdir()
+        if d.is_dir() and (d / "storage.bin").exists() and d.name not in ("arhiv",)
+    )
+    langs = [{"code": code, "name": LANG_NAMES.get(code, code)} for code in built]
+    LANGS_JSON.write_text(json.dumps(langs, ensure_ascii=False, indent=2), encoding="utf-8")
+    print(f"Updated languages.json: {[l['code'] for l in langs]}")
+
+
 def main():
     if not SPIFFSGEN.exists():
         print("[ERROR] tools/spiffsgen.py not found.")
@@ -73,11 +106,12 @@ def main():
     langs = sys.argv[1:] if len(sys.argv) > 1 else sorted(d.name for d in SOURCE_DIR.iterdir() if d.is_dir())
 
     if not langs:
-        print(f"[ERROR] No language folders found in source/")
+        print("[ERROR] No language folders found in source/")
         sys.exit(1)
 
     print(f"Building {len(langs)} language(s): {', '.join(langs)}")
     success = all(build_lang(lang) for lang in langs)
+    update_languages_json()
     print("Done." if success else "Finished with errors.")
     sys.exit(0 if success else 1)
 

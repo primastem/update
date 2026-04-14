@@ -111,11 +111,8 @@
 
       <div class="step hidden" id="lang-step">
         <div class="step-label">3. Select language:</div>
-        <ul class="lang-grid">
-          <li><label><input type="radio" name="lang" value="en" /> English</label></li>
-          <li><label><input type="radio" name="lang" value="fr" /> Français</label></li>
-          <li><label><input type="radio" name="lang" value="ru" /> Русский</label></li>
-          <!-- Add more languages here, one <li> per language -->
+        <ul class="lang-grid" id="lang-grid">
+          <!-- populated dynamically from languages.json -->
         </ul>
       </div>
 
@@ -138,14 +135,51 @@
       let selectedLang = null;
 
       function detectLocale() {
-        const lang = (navigator.language || 'en').toLowerCase();
-        if (lang.startsWith('fr')) return 'fr';
-        if (lang.startsWith('ru')) return 'ru';
-        return 'en';
+        return (navigator.language || 'en').toLowerCase().slice(0, 2);
       }
 
       function isDev(device) {
         return device && device.startsWith('dev');
+      }
+
+      async function loadLanguages() {
+        try {
+          const res = await fetch('./languages.json');
+          if (!res.ok) throw new Error();
+          return await res.json();
+        } catch {
+          // fallback if languages.json missing (e.g. local testing)
+          return [
+            { code: 'en', name: 'English' },
+            { code: 'fr', name: 'Français' },
+            { code: 'ru', name: 'Русский' },
+          ];
+        }
+      }
+
+      function buildLangGrid(languages) {
+        const grid = document.getElementById('lang-grid');
+        grid.innerHTML = '';
+        const detectedLocale = detectLocale();
+        let defaultLang = languages.find(l => l.code === detectedLocale) ? detectedLocale : languages[0]?.code;
+
+        languages.forEach(({ code, name }) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<label><input type="radio" name="lang" value="${code}" /> ${name}</label>`;
+          grid.appendChild(li);
+        });
+
+        // Wire up change handlers and pre-select detected language
+        document.querySelectorAll('input[name="lang"]').forEach(radio => {
+          radio.addEventListener('change', () => {
+            selectedLang = radio.value;
+            updateManifest();
+          });
+          if (radio.value === defaultLang) {
+            radio.checked = true;
+            selectedLang = defaultLang;
+          }
+        });
       }
 
       async function updateManifest() {
@@ -212,21 +246,8 @@
         })
       );
 
-      // Language selection
-      document.querySelectorAll('input[name="lang"]').forEach(radio =>
-        radio.addEventListener('change', () => {
-          selectedLang = radio.value;
-          updateManifest();
-        })
-      );
-
-      // Auto-detect language and pre-select
-      const detectedLocale = detectLocale();
-      const langRadio = document.querySelector(`input[name="lang"][value="${detectedLocale}"]`);
-      if (langRadio) {
-        langRadio.checked = true;
-        selectedLang = detectedLocale;
-      }
+      // Load language list and build selector
+      loadLanguages().then(buildLangGrid);
     </script>
   </body>
 </html>
