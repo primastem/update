@@ -47,3 +47,9 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode
+
+# ESP-IDF tool — copy locally but don't track
+tools/spiffsgen.py
+
+# MP3 source files — large, not needed in repo (uncomment to ignore)
+# source/
