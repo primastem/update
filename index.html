@@ -142,19 +142,37 @@
         return device && device.startsWith('dev');
       }
 
+      // All possible languages — add new ones here as you expand.
+      // The page auto-detects which are actually available by probing storage.bin.
+      const ALL_LANGS = [
+        { code: 'en', name: 'English' },
+        { code: 'fr', name: 'Français' },
+        { code: 'ru', name: 'Русский' },
+        { code: 'de', name: 'Deutsch' },
+        { code: 'es', name: 'Español' },
+        { code: 'it', name: 'Italiano' },
+        { code: 'pt', name: 'Português' },
+        { code: 'nl', name: 'Nederlands' },
+        { code: 'pl', name: 'Polski' },
+        { code: 'tr', name: 'Türkçe' },
+        { code: 'zh', name: '中文' },
+        { code: 'ja', name: '日本語' },
+        { code: 'ko', name: '한국어' },
+        { code: 'ar', name: 'العربية' },
+      ];
+
       async function loadLanguages() {
-        try {
-          const res = await fetch('./languages.json');
-          if (!res.ok) throw new Error();
-          return await res.json();
-        } catch {
-          // fallback if languages.json missing (e.g. local testing)
-          return [
-            { code: 'en', name: 'English' },
-            { code: 'fr', name: 'Français' },
-            { code: 'ru', name: 'Русский' },
-          ];
-        }
+        const checks = ALL_LANGS.map(async lang => {
+          try {
+            const res = await fetch(`./firmware/robot/s3/${lang.code}/storage.bin`, { method: 'HEAD' });
+            return res.ok ? lang : null;
+          } catch {
+            return null;
+          }
+        });
+        const found = (await Promise.all(checks)).filter(Boolean);
+        // Fallback for local file:// testing — show all languages
+        return found.length > 0 ? found : ALL_LANGS;
       }
 
       function buildLangGrid(languages) {
