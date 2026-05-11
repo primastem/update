@@ -13,7 +13,7 @@ Live at **[update.primastem.com](https://update.primastem.com/)** — works in C
 ## Adding a new language
 
 1. Put MP3 files into `source/{lang}/` (e.g. `source/de/`)
-2. Generate the storage image for production (8 MB partition, S3):
+2. Generate the storage image (10 MB partition, S3):
    ```bash
    python tools/build_storage.py de
    ```
@@ -33,7 +33,7 @@ Live at **[update.primastem.com](https://update.primastem.com/)** — works in C
 
 `tools/build_storage.py` is hardened — it fails loudly on any `spiffsgen` error and verifies the output file size after every build. It will never leave a silent zero-byte `storage.bin`.
 
-Production targets use an 8 MB SPIFFS partition. Development targets use 10 MB (matches `firmware/development/*/partition-table.bin`).
+All ESP32-S3 targets (production and development) use the same **10 MB** SPIFFS partition.
 
 ```bash
 # All languages found in source/, production only
@@ -45,14 +45,14 @@ python tools/build_storage.py en
 # Multiple languages, production only
 python tools/build_storage.py en fr ru
 
-# Production EN + development EN (10 MB image into firmware/development/{robot,control}/)
+# Production EN + development EN (both 10 MB)
 python tools/build_storage.py en --dev
 
 # Only the development image (e.g. switch the dev bundle from EN to RU)
 python tools/build_storage.py ru --dev-only
 ```
 
-The dev firmware uses a single `storage.bin` (no per-language folder), so the dev mode bundles exactly one language at a time — the last positional argument wins.
+The dev firmware uses a single `storage.bin` (no per-language folder), so `--dev` bundles exactly one language at a time — the last positional argument wins.
 
 ## Firmware layout
 
@@ -61,22 +61,25 @@ firmware/
 ├── robot/
 │   ├── esp32/                      # ESP32 firmware
 │   └── s3/                         # ESP32-S3 firmware
-│       ├── {lang}/storage.bin      # localized audio (one per language, 8 MB)
-│       └── arhiv/                  # archived releases
+│       ├── {lang}/storage.bin      # localized audio (10 MB per language)
+│       └── arhiv/                  # archived releases + previous partition tables
 ├── control/
 │   └── (same structure)
 └── development/
-    ├── robot/                      # dev/test builds (storage.bin = 10 MB)
+    ├── robot/                      # dev/test builds (10 MB storage.bin)
     └── control/
 ```
 
-## Partition map (ESP32-S3)
+## Partition map (ESP32-S3, unified prod and dev)
 
-| Partition | Offset | Size (prod) | Size (dev) |
-|---|---|---|---|
-| nvs       | 0x009000 | 24 KB | 24 KB |
-| phy_init  | 0x00F000 | 4 KB  | 4 KB  |
-| factory   | 0x010000 | 1 MB  | 1 MB  |
-| storage   | 0x110000 | **8 MB** | **10 MB** |
+| Partition | Offset | Size |
+|---|---|---|
+| nvs       | 0x009000 | 24 KB |
+| phy_init  | 0x00F000 | 4 KB  |
+| factory   | 0x010000 | 1 MB  |
+| storage   | 0x110000 | **10 MB** |
 
-Total flash required: ≥ 16 MB.
+End of storage: `0x110000 + 0xA00000 = 0xB10000` (≈ 11.06 MB).
+Required flash size: **16 MB** (standard for ESP32-S3-WROOM-1 N16R8).
+
+> Until 2026-05-11 production used an 8 MB storage partition while development used 10 MB. The maps were unified to 10 MB across both. Old 8 MB partition-tables are archived in `firmware/{robot,control}/s3/arhiv/partition-table_8MB_2026-05-11.bin`.

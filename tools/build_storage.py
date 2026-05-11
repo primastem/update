@@ -2,24 +2,25 @@
 """
 Generate SPIFFS storage.bin for PrimaSTEM firmware from language source folders.
 
+ESP32-S3 partition map (unified prod and dev as of 2026-05-11):
+    storage partition: offset 0x110000, size 0x00A00000 (10 MB)
+
 Usage:
-    python tools/build_storage.py                 # build ALL langs for prod
-    python tools/build_storage.py ru              # build only Russian for prod
-    python tools/build_storage.py ru en fr        # build multiple langs for prod
-    python tools/build_storage.py en --dev        # build prod EN + dev EN (10 MB)
-    python tools/build_storage.py en --dev-only   # build only dev EN (10 MB)
+    python tools/build_storage.py                 # build ALL langs found in source/
+    python tools/build_storage.py ru              # build only Russian
+    python tools/build_storage.py ru en fr        # build multiple languages
+    python tools/build_storage.py en --dev        # build prod EN + dev EN (same size now)
+    python tools/build_storage.py en --dev-only   # build only the dev image
 
 Prerequisites:
     Copy spiffsgen.py from ESP-IDF into tools/:
         cp $IDF_PATH/components/spiffs/spiffsgen.py tools/
 
 Output:
-    Prod (8 MB partition, S3):
-        firmware/robot/s3/{lang}/storage.bin
-        firmware/control/s3/{lang}/storage.bin
-    Dev (10 MB partition, S3) - single file, no per-lang folder:
-        firmware/development/robot/storage.bin
-        firmware/development/control/storage.bin
+    Prod (S3): firmware/robot/s3/{lang}/storage.bin
+               firmware/control/s3/{lang}/storage.bin
+    Dev  (S3): firmware/development/robot/storage.bin    (single file, no per-lang folder)
+               firmware/development/control/storage.bin
 
 Hardening:
     - Fails loudly if spiffsgen returns non-zero (prints stderr).
@@ -35,10 +36,8 @@ REPO_ROOT  = Path(__file__).parent.parent
 SOURCE_DIR = REPO_ROOT / "source"
 SPIFFSGEN  = Path(__file__).parent / "spiffsgen.py"
 
-# S3 production partition table: storage size = 0x00800000 (8 MB)
-PROD_PARTITION_SIZE = 0x00800000
-# S3 development partition table: storage size = 0x00A00000 (10 MB)
-DEV_PARTITION_SIZE  = 0x00A00000
+# ESP32-S3 storage partition size, identical for prod and dev (10 MB)
+S3_PARTITION_SIZE = 0x00A00000
 
 # Must match firmware partition table and menuconfig
 SPIFFS_FLAGS = [
@@ -88,18 +87,17 @@ def build_lang_prod(lang):
         raise FileNotFoundError("source/{}/ not found".format(lang))
     for target in PROD_TARGETS:
         out_file = REPO_ROOT / target / lang / "storage.bin"
-        run_spiffsgen(PROD_PARTITION_SIZE, src, out_file)
+        run_spiffsgen(S3_PARTITION_SIZE, src, out_file)
 
 
 def build_dev(lang):
-    """Build the dev storage image (10 MB) from one language source.
-    Dev firmware uses a single storage.bin (no per-language folder)."""
+    """Dev firmware uses a single storage.bin (no per-language folder)."""
     src = SOURCE_DIR / lang
     if not src.is_dir():
         raise FileNotFoundError("source/{}/ not found".format(lang))
     for target in DEV_TARGETS:
         out_file = REPO_ROOT / target / "storage.bin"
-        run_spiffsgen(DEV_PARTITION_SIZE, src, out_file)
+        run_spiffsgen(S3_PARTITION_SIZE, src, out_file)
 
 
 def main():
@@ -128,9 +126,9 @@ def main():
     if dev_only:
         mode_label = "dev only (10 MB)"
     elif dev_mode:
-        mode_label = "prod (8 MB) + dev (10 MB)"
+        mode_label = "prod + dev (10 MB)"
     else:
-        mode_label = "prod (8 MB)"
+        mode_label = "prod (10 MB)"
     print("Mode: " + mode_label)
     print("Languages: " + ", ".join(langs))
     print("")
