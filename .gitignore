@@ -53,3 +53,6 @@ $RECYCLE.BIN/
 
 # MP3 source files — large, not needed in repo (uncomment to ignore)
 #source/
+# Python
+__pycache__/
+*.pyc
