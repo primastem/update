@@ -60,3 +60,6 @@ __pycache__/
 
 # Temp folder for sound generation / pre-build artifacts
 temp/
+
+# Local helper — contains absolute path to TTS pipeline on this machine
+sync_and_build.bat
