@@ -51,8 +51,12 @@ $RECYCLE.BIN/
 # ESP-IDF tool — copy locally but don't track
 #tools/spiffsgen.py
 
-# MP3 source files — large, not needed in repo (uncomment to ignore)
-#source/
+# MP3 source files — source of truth lives in the separate TTS repo (temp/),
+# only compiled storage.bin is kept here
+source/
 # Python
 __pycache__/
 *.pyc
+
+# Temp folder for sound generation / pre-build artifacts
+temp/

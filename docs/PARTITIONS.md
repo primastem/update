@@ -2,7 +2,8 @@
 
 Reference document for firmware developers. Describes the flash layout used on
 both the **Robot** and **Control board** S3 builds. The same map is shared by
-production and development firmware (unified 2026-05-11).
+production and development firmware (unified to 10 MB on 2026-05-11, then
+expanded to 13 MB the same day after the audio set grew).
 
 ## Hardware
 
@@ -26,11 +27,11 @@ table records but flashed at fixed offsets) for the developer's reference.
 | 3 | nvs             | data | nvs     | `0x009000` | `36 864`   | `0x006000` | `24 576`     | 24 KB  | `0x00F000` |
 | 4 | phy_init        | data | phy     | `0x00F000` | `61 440`   | `0x001000` | `4 096`      | 4 KB   | `0x010000` |
 | 5 | factory (app)   | app  | factory | `0x010000` | `65 536`   | `0x100000` | `1 048 576`  | 1 MB   | `0x110000` |
-| 6 | storage (SPIFFS)| data | spiffs  | `0x110000` | `1 114 112`| `0xA00000` | `10 485 760` | 10 MB  | `0xB10000` |
+| 6 | storage (SPIFFS)| data | spiffs  | `0x110000` | `1 114 112`| `0xD00000` | `13 631 488` | 13 MB  | `0xE10000` |
 
 App binary footprint: ~720 KB (fits the 1 MB factory partition with ~330 KB headroom).
-End of storage partition: `0xB10000` ≈ 11.06 MB. Free flash on a 16 MB chip: ~5 MB
-(reserve for future OTA or expansion).
+End of storage partition: `0xE10000` ≈ 14.06 MB. Free flash on a 16 MB chip: ~2 MB
+(reserve at the tail of flash; do not flash anything past `0xE10000`).
 
 ## partitions.csv (for ESP-IDF)
 
@@ -42,7 +43,7 @@ Drop this into your firmware project as `partitions.csv` and reference it from
 nvs,       data, nvs,      0x9000,    0x6000
 phy_init,  data, phy,      0xF000,    0x1000
 factory,   app,  factory,  0x10000,   0x100000
-storage,   data, spiffs,   0x110000,  0xA00000
+storage,   data, spiffs,   0x110000,  0xD00000
 ```
 
 The corresponding `menuconfig` settings:
@@ -75,9 +76,11 @@ Type / SubType codes used in this project:
 | data/phy    | `0x01` | `0x01` |
 | data/spiffs | `0x01` | `0x82` |
 
-The last record in `partition-table.bin` is an MD5 checksum entry — magic `0xEB 0xEB`
-followed by the MD5 of all preceding records. ESP-IDF tooling generates this
-automatically; the binary in this repo already has it.
+The last record in `partition-table.bin` is an MD5 checksum entry — magic
+`0xEB 0xEB` followed by 14 padding bytes (`0xFF`), then the MD5 hash of all
+preceding 32-byte records. ESP-IDF tooling generates this automatically.
+If you modify a record in-place, you MUST recompute the MD5, otherwise the
+bootloader will reject the table.
 
 ## SPIFFS storage configuration
 
@@ -94,9 +97,11 @@ following flags, which must match the firmware-side `menuconfig`:
 | `--use-magic-len`   | enabled | `CONFIG_SPIFFS_USE_MAGIC_LENGTH` |
 | Block size (default `4096`) | `4096` | flash sector size, matches `g_rom_flashchip.sector_size` |
 
-The output image is always exactly `0xA00000` (10 MB) — the size is enforced by
+The output image is always exactly `0xD00000` (13 MB) — the size is enforced by
 the build script (`run_spiffsgen` raises if the produced file does not match the
-partition size).
+partition size). On a 13 MB SPIFFS slot the real usable capacity is ~12.4 MB
+after metadata overhead; the largest current language pack (`sv`) is ~9.7 MB of
+MP3 source, so there is ~2.7 MB of headroom per pack.
 
 ## esp-web-tools manifest (production)
 
@@ -122,23 +127,32 @@ offsets (decimal, as required by esp-web-tools):
 }
 ```
 
-`new_install_prompt_erase: true` causes a full chip erase on first install — this
-keeps the flash clean when migrating from older partition layouts.
+`new_install_prompt_erase: true` causes a full chip erase on first install —
+this keeps the flash clean when migrating from older partition layouts.
+
+The site's `index.html` rewrites the `storage.bin` path at runtime to swap the
+selected locale (regex matches both two-letter codes like `en` and
+extended forms like `pt-BR`).
 
 ## Change log
 
-- **2026-05-11** — Production and development partition maps unified. Storage
-  partition was previously 8 MB in production and 10 MB in development; both are
-  now 10 MB. Old 8 MB partition-tables archived at
+- **2026-05-11 (late)** — Storage partition bumped from 10 MB to **13 MB**
+  (`0xD00000`) across prod and dev to accommodate the expanded audio set
+  (de/es/nl/sv source MP3 grew past 9 MB and no longer fit a 10 MB SPIFFS slot).
+  Old 10 MB partition-tables archived under
+  `firmware/{robot,control}/s3/arhiv/partition-table_10MB_2026-05-11.bin` and
+  `firmware/development/{robot,control}/arhiv/partition-table_10MB_2026-05-11.bin`.
+- **2026-05-11 (earlier)** — Production and development maps unified at 10 MB.
+  Production was previously 8 MB. Old 8 MB partition-tables archived at
   `firmware/{robot,control}/s3/arhiv/partition-table_8MB_2026-05-11.bin`.
-- The `tools/build_storage.py` build script was hardened the same day: it now
+- The `tools/build_storage.py` build script was hardened the same day: it
   fails loudly on any `spiffsgen` error, captures stderr, and verifies the
   output file size after every build — preventing silent zero-byte storage
   images.
 
 ## Legacy ESP32 (non-S3) firmware
 
-`firmware/{robot,control}/esp32/` contains older firmware for plain ESP32 (not
-S3) boards still in the field. **Not in active development** — kept only as an
-archive so the existing web installer can still flash legacy units. Partition
-maps differ from the S3 layout and are not described here.
+`firmware/{robot,control}/esp32/` contains older firmware for plain ESP32
+(not S3) boards still in the field. **Not in active development** — kept only
+as an archive so the existing web installer can still flash legacy units.
+Partition maps differ from the S3 layout and are not described here.
