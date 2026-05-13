@@ -139,6 +139,36 @@ The site's `index.html` rewrites the `storage.bin` path at runtime to swap the
 selected locale (regex matches both two-letter codes like `en` and
 extended forms like `pt-BR`).
 
+## Direct esptool flashing (without the web installer)
+
+To flash a board over USB without going through `update.primastem.com`:
+
+```bash
+esptool.py --chip esp32s3 --port COM5 --baud 921600 write_flash \
+    0x0       firmware/robot/s3/bootloader.bin \
+    0x8000    firmware/robot/s3/partition-table.bin \
+    0x10000   firmware/robot/s3/robot.bin \
+    0x110000  firmware/robot/s3/en/storage.bin
+```
+
+Replace `COM5` with the device's serial port, and switch
+`firmware/robot/s3` → `firmware/control/s3` for the Control board (and
+`robot.bin` → `control.bin`). For a different language, swap
+`en/storage.bin` → `ru/storage.bin` etc.
+
+Add `--erase-all` before `write_flash` if migrating from a different
+partition layout (otherwise the existing flash may contain stale data
+beyond the new partitions).
+
+## Supported audio locales (15)
+
+`da`, `de`, `en`, `es`, `fr`, `it`, `ja`, `nb`, `nl`, `pl`,
+`pt-BR`, `ru`, `sv`, `tr`, `uk`.
+
+Each is a separate `storage.bin` under `firmware/{robot,control}/s3/{lang}/`.
+Dev firmware (`firmware/development/{robot,control}/storage.bin`) bundles
+English only; the byte-identical EN image is also available in the prod tree.
+
 ## Change log
 
 - **2026-05-11 (latest)** — Storage partition bumped from 13 MB to **14.5 MB**

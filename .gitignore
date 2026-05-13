@@ -63,3 +63,6 @@ temp/
 
 # Local helper — contains absolute path to TTS pipeline on this machine
 sync_and_build.bat
+
+# Internal docs — do not publish to the repo
+docs/PARTITIONS.md
