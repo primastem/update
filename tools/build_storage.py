@@ -2,15 +2,15 @@
 """
 Generate SPIFFS storage.bin for PrimaSTEM firmware from language source folders.
 
-ESP32-S3 partition map (unified prod and dev, 13 MB as of 2026-05-11):
-    storage partition: offset 0x110000, size 0x00D00000 (13 MB)
+ESP32-S3 partition map (unified prod and dev, 14.5 MB as of 2026-05-11):
+    storage partition: offset 0x110000, size 0x00E80000 (14.5 MB)
 
 Usage:
     python tools/build_storage.py                 # build ALL langs found in source/
     python tools/build_storage.py ru              # build only Russian
     python tools/build_storage.py ru en fr        # build multiple languages
-    python tools/build_storage.py en --dev        # build prod EN + dev EN (both 13 MB)
-    python tools/build_storage.py en --dev-only   # build only the dev image (13 MB)
+    python tools/build_storage.py en --dev        # build prod EN + dev EN (both 14.5 MB)
+    python tools/build_storage.py en --dev-only   # build only the dev image (14.5 MB)
 
 Prerequisites:
     Copy spiffsgen.py from ESP-IDF into tools/:
@@ -37,7 +37,7 @@ SOURCE_DIR = REPO_ROOT / "source"
 SPIFFSGEN  = Path(__file__).parent / "spiffsgen.py"
 
 # ESP32-S3 storage partition size, identical for prod and dev (10 MB)
-S3_PARTITION_SIZE = 0x00D00000
+S3_PARTITION_SIZE = 0x00E80000
 
 # Must match firmware partition table and menuconfig
 SPIFFS_FLAGS = [
@@ -124,11 +124,11 @@ def main():
         sys.exit(1)
 
     if dev_only:
-        mode_label = "dev only (13 MB)"
+        mode_label = "dev only (14.5 MB)"
     elif dev_mode:
-        mode_label = "prod + dev (13 MB)"
+        mode_label = "prod + dev (14.5 MB)"
     else:
-        mode_label = "prod (13 MB)"
+        mode_label = "prod (14.5 MB)"
     print("Mode: " + mode_label)
     print("Languages: " + ", ".join(langs))
     print("")

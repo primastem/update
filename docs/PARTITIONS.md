@@ -2,8 +2,9 @@
 
 Reference document for firmware developers. Describes the flash layout used on
 both the **Robot** and **Control board** S3 builds. The same map is shared by
-production and development firmware (unified to 10 MB on 2026-05-11, then
-expanded to 13 MB the same day after the audio set grew).
+production and development firmware (unified to 10 MB on 2026-05-11, expanded
+to 13 MB later same day, then bumped to **14.5 MB** to leave headroom for
+future audio growth).
 
 ## Hardware
 
@@ -27,11 +28,15 @@ table records but flashed at fixed offsets) for the developer's reference.
 | 3 | nvs             | data | nvs     | `0x009000` | `36 864`   | `0x006000` | `24 576`     | 24 KB  | `0x00F000` |
 | 4 | phy_init        | data | phy     | `0x00F000` | `61 440`   | `0x001000` | `4 096`      | 4 KB   | `0x010000` |
 | 5 | factory (app)   | app  | factory | `0x010000` | `65 536`   | `0x100000` | `1 048 576`  | 1 MB   | `0x110000` |
-| 6 | storage (SPIFFS)| data | spiffs  | `0x110000` | `1 114 112`| `0xD00000` | `13 631 488` | 13 MB  | `0xE10000` |
+| 6 | storage (SPIFFS)| data | spiffs  | `0x110000` | `1 114 112`| `0xE80000` | `15 204 352` | 14.5 MB| `0xF90000` |
 
-App binary footprint: ~720 KB (fits the 1 MB factory partition with ~330 KB headroom).
-End of storage partition: `0xE10000` ≈ 14.06 MB. Free flash on a 16 MB chip: ~2 MB
-(reserve at the tail of flash; do not flash anything past `0xE10000`).
+App binary footprint: ~720 KB (fits the 1 MB factory partition with ~280 KB headroom).
+End of storage partition: `0xF90000` ≈ 15.56 MB. Free flash on a 16 MB chip: ~448 KB
+(reserve at the tail of flash; do not flash anything past `0xF90000`).
+
+**Warning:** with only 1 MB factory partition and ~280 KB of headroom, the
+firmware cannot grow much. If the app exceeds 1 MB, the storage partition
+must be shrunk to make room. Reach for this BEFORE the app gets close to 1 MB.
 
 ## partitions.csv (for ESP-IDF)
 
@@ -43,7 +48,7 @@ Drop this into your firmware project as `partitions.csv` and reference it from
 nvs,       data, nvs,      0x9000,    0x6000
 phy_init,  data, phy,      0xF000,    0x1000
 factory,   app,  factory,  0x10000,   0x100000
-storage,   data, spiffs,   0x110000,  0xD00000
+storage,   data, spiffs,   0x110000,  0xE80000
 ```
 
 The corresponding `menuconfig` settings:
@@ -97,11 +102,11 @@ following flags, which must match the firmware-side `menuconfig`:
 | `--use-magic-len`   | enabled | `CONFIG_SPIFFS_USE_MAGIC_LENGTH` |
 | Block size (default `4096`) | `4096` | flash sector size, matches `g_rom_flashchip.sector_size` |
 
-The output image is always exactly `0xD00000` (13 MB) — the size is enforced by
-the build script (`run_spiffsgen` raises if the produced file does not match the
-partition size). On a 13 MB SPIFFS slot the real usable capacity is ~12.4 MB
-after metadata overhead; the largest current language pack (`sv`) is ~9.7 MB of
-MP3 source, so there is ~2.7 MB of headroom per pack.
+The output image is always exactly `0xE80000` (14.5 MB) — the size is enforced
+by the build script (`run_spiffsgen` raises if the produced file does not match
+the partition size). On a 14.5 MB SPIFFS slot the real usable capacity is
+~13.9 MB after metadata overhead; the largest current language pack (`sv`) is
+~9.7 MB of MP3 source, leaving ~4.2 MB of headroom per pack.
 
 ## esp-web-tools manifest (production)
 
@@ -136,19 +141,22 @@ extended forms like `pt-BR`).
 
 ## Change log
 
-- **2026-05-11 (late)** — Storage partition bumped from 10 MB to **13 MB**
-  (`0xD00000`) across prod and dev to accommodate the expanded audio set
-  (de/es/nl/sv source MP3 grew past 9 MB and no longer fit a 10 MB SPIFFS slot).
-  Old 10 MB partition-tables archived under
-  `firmware/{robot,control}/s3/arhiv/partition-table_10MB_2026-05-11.bin` and
-  `firmware/development/{robot,control}/arhiv/partition-table_10MB_2026-05-11.bin`.
-- **2026-05-11 (earlier)** — Production and development maps unified at 10 MB.
-  Production was previously 8 MB. Old 8 MB partition-tables archived at
-  `firmware/{robot,control}/s3/arhiv/partition-table_8MB_2026-05-11.bin`.
+- **2026-05-11 (latest)** — Storage partition bumped from 13 MB to **14.5 MB**
+  (`0xE80000`) across prod and dev to leave headroom for future audio growth.
+  Old 13 MB partition-tables archived as `partition-table_13MB_2026-05-11.bin`.
+- **2026-05-11 (earlier)** — Storage bumped from 10 MB to 13 MB
+  (`0xD00000`) to accommodate the expanded audio set (de/es/nl/sv source MP3
+  grew past 9 MB and no longer fit a 10 MB SPIFFS slot).
+- **2026-05-11 (earliest)** — Production and development maps unified at
+  10 MB. Production was previously 8 MB.
 - The `tools/build_storage.py` build script was hardened the same day: it
   fails loudly on any `spiffsgen` error, captures stderr, and verifies the
   output file size after every build — preventing silent zero-byte storage
   images.
+
+All previous partition tables archived under
+`firmware/{robot,control}/s3/arhiv/` and
+`firmware/development/{robot,control}/arhiv/`.
 
 ## Legacy ESP32 (non-S3) firmware
 
