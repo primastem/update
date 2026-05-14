@@ -126,6 +126,7 @@
       <div class="footer">
         <p>This is a firmware update web page for <a href="https://primastem.com/">PrimaSTEM</a> devices.</p>
         <p>Documentation — <a href="https://docs.primastem.com/">docs.PrimaSTEM.com</a></p>
+        <p style="color:#888;font-size:0.9em;">Last firmware build: <span id="build-date">…</span></p>
       </div>
     </div>
 
@@ -270,6 +271,17 @@
 
       // Load language list and build selector
       loadLanguages().then(buildLangGrid);
+
+      // Show last firmware build date — uses Last-Modified of this page,
+      // which GitHub Pages bumps on every deploy (i.e. every push).
+      try {
+        const d = new Date(document.lastModified);
+        document.getElementById('build-date').textContent = isNaN(d.getTime())
+          ? document.lastModified
+          : d.toLocaleString();
+      } catch (e) {
+        document.getElementById('build-date').textContent = document.lastModified || 'unknown';
+      }
     </script>
   </body>
 </html>
