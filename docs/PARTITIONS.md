@@ -160,10 +160,13 @@ Add `--erase-all` before `write_flash` if migrating from a different
 partition layout (otherwise the existing flash may contain stale data
 beyond the new partitions).
 
-## Supported audio locales (15)
+## Supported audio locales (17)
 
-`da`, `de`, `en`, `es`, `fr`, `it`, `ja`, `nb`, `nl`, `pl`,
-`pt-BR`, `ru`, `sv`, `tr`, `uk`.
+`ca`, `da`, `de`, `en`, `es`, `fr`, `he`, `it`, `ja`, `nb`, `nl`,
+`pl`, `pt-BR`, `ru`, `sv`, `tr`, `uk`.
+
+Note: `he` (Hebrew) is RTL — only the audio path uses it, the install
+UI just shows the locale name in the native script.
 
 Each is a separate `storage.bin` under `firmware/{robot,control}/s3/{lang}/`.
 Dev firmware (`firmware/development/{robot,control}/storage.bin`) bundles
