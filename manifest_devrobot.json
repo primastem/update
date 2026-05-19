@@ -8,7 +8,7 @@
                "parts": [
           { "path": "firmware/development/robot/bootloader.bin", "offset": 0 },
           { "path": "firmware/development/robot/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/development/robot/prima_stem_robot_esp32s3.bin", "offset": 65536 },
+          { "path": "firmware/development/robot/robot.bin", "offset": 65536 },
           { "path": "firmware/development/robot/storage.bin", "offset": 1114112 }
         ]
       }    ]

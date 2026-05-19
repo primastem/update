@@ -10,6 +10,17 @@ Live at **[update.primastem.com](https://update.primastem.com/)** — works in C
 | Robot | ESP32, ESP32-S3 |
 | Control board | ESP32, ESP32-S3 |
 
+## Supported languages (17, ESP32-S3 only)
+
+`ca` Català · `da` Dansk · `de` Deutsch · `en` English · `es` Español ·
+`fr` Français · `he` עברית · `it` Italiano · `ja` 日本語 · `nb` Norsk ·
+`nl` Nederlands · `pl` Polski · `pt-BR` Português (Brasil) · `ru` Русский ·
+`sv` Svenska · `tr` Türkçe · `uk` Українська
+
+Each locale ships as a separate 14.5 MB SPIFFS image at
+`firmware/{robot,control}/s3/{lang}/storage.bin`. The dev firmware
+(`firmware/development/{robot,control}/storage.bin`) bundles English only.
+
 ## Adding a new language
 
 1. Put MP3 files into `source/{lang}/` (e.g. `source/de/`)
