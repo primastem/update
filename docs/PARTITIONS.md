@@ -151,14 +151,29 @@ esptool.py --chip esp32s3 --port COM5 --baud 921600 write_flash \
     0x110000  firmware/robot/s3/en/storage.bin
 ```
 
-Replace `COM5` with the device's serial port, and switch
-`firmware/robot/s3` → `firmware/control/s3` for the Control board (and
-`robot.bin` → `control.bin`). For a different language, swap
-`en/storage.bin` → `ru/storage.bin` etc.
+Replace `COM5` with the device's serial port. For other variants:
+
+- **Control board (prod):** swap `firmware/robot/s3` → `firmware/control/s3`
+  and `robot.bin` → `control.bin`.
+- **Dev Robot:** swap `firmware/robot/s3` → `firmware/development/robot`;
+  app file is also `robot.bin` (unified naming since 2026-05-19).
+  Storage path is just `firmware/development/robot/storage.bin` — no per-lang
+  subfolder for dev.
+- **Dev Control:** `firmware/development/control` + `control.bin` + flat
+  `storage.bin`.
+
+For a different language (prod only), swap `en/storage.bin` → `ru/storage.bin` etc.
 
 Add `--erase-all` before `write_flash` if migrating from a different
 partition layout (otherwise the existing flash may contain stale data
 beyond the new partitions).
+
+### App binary naming (unified 2026-05-19)
+
+Both prod and dev now use `robot.bin` and `control.bin` for the app
+partition. Older releases used `prima_stem_robot_esp32s3.bin` /
+`prima_stem_controll_esp32s3.bin` in the dev folders — those names are
+gone; any references in old documentation or scripts should be updated.
 
 ## Supported audio locales (17)
 
@@ -174,6 +189,11 @@ English only; the byte-identical EN image is also available in the prod tree.
 
 ## Change log
 
+- **2026-05-19** — Dev firmware app binaries renamed for consistency:
+  `prima_stem_robot_esp32s3.bin` → `robot.bin`,
+  `prima_stem_controll_esp32s3.bin` → `control.bin`. Both prod and dev
+  now use the same filenames. Catalan (`ca`) and Hebrew (`he`) audio
+  added — 17 supported locales total.
 - **2026-05-11 (latest)** — Storage partition bumped from 13 MB to **14.5 MB**
   (`0xE80000`) across prod and dev to leave headroom for future audio growth.
   Old 13 MB partition-tables archived as `partition-table_13MB_2026-05-11.bin`.
