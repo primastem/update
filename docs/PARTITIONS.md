@@ -122,10 +122,10 @@ offsets (decimal, as required by esp-web-tools):
       "chipFamily": "ESP32-S3",
       "improv": true,
       "parts": [
-        { "path": "firmware/robot/s3/bootloader.bin",       "offset": 0       },
-        { "path": "firmware/robot/s3/partition-table.bin",  "offset": 32768   },
-        { "path": "firmware/robot/s3/robot.bin",            "offset": 65536   },
-        { "path": "firmware/robot/s3/en/storage.bin",       "offset": 1114112 }
+        { "path": "firmware/s3/stable/robot/bootloader.bin",      "offset": 0       },
+        { "path": "firmware/s3/stable/robot/partition-table.bin", "offset": 32768   },
+        { "path": "firmware/s3/stable/robot/robot.bin",           "offset": 65536   },
+        { "path": "firmware/s3/audio/en/storage.bin",             "offset": 1114112 }
       ]
     }
   ]
@@ -145,47 +145,47 @@ To flash a board over USB without going through `update.primastem.com`:
 
 ```bash
 esptool.py --chip esp32s3 --port COM5 --baud 921600 write_flash \
-    0x0       firmware/robot/s3/bootloader.bin \
-    0x8000    firmware/robot/s3/partition-table.bin \
-    0x10000   firmware/robot/s3/robot.bin \
-    0x110000  firmware/robot/s3/en/storage.bin
+    0x0       firmware/s3/stable/robot/bootloader.bin \
+    0x8000    firmware/s3/stable/robot/partition-table.bin \
+    0x10000   firmware/s3/stable/robot/robot.bin \
+    0x110000  firmware/s3/audio/en/storage.bin
 ```
 
-Replace `COM5` with the device's serial port. For other variants:
+Replace `COM5` with the device's serial port. The storage image is shared, so
+only the first three paths change per variant:
 
-- **Control board (prod):** swap `firmware/robot/s3` → `firmware/control/s3`
+- **Control board (stable):** swap `firmware/s3/stable/robot` → `firmware/s3/stable/control`
   and `robot.bin` → `control.bin`.
-- **Dev Robot:** swap `firmware/robot/s3` → `firmware/development/robot`;
-  app file is also `robot.bin` (unified naming since 2026-05-19).
-  Storage path is just `firmware/development/robot/storage.bin` — no per-lang
-  subfolder for dev.
-- **Dev Control:** `firmware/development/control` + `control.bin` + flat
-  `storage.bin`.
+- **Dev Robot:** swap `firmware/s3/stable/robot` → `firmware/s3/development/robot`
+  (app file is still `robot.bin`).
+- **Dev Control:** `firmware/s3/development/control` + `control.bin`.
 
-For a different language (prod only), swap `en/storage.bin` → `ru/storage.bin` etc.
+The storage path (`firmware/s3/audio/{lang}/storage.bin`) is the same for every
+variant — swap `en` → `ru` etc. for a different language.
 
 Add `--erase-all` before `write_flash` if migrating from a different
 partition layout (otherwise the existing flash may contain stale data
 beyond the new partitions).
 
-### App binary naming (unified 2026-05-19)
+### App binary naming (unified)
 
-Both prod and dev now use `robot.bin` and `control.bin` for the app
-partition. Older releases used `prima_stem_robot_esp32s3.bin` /
-`prima_stem_controll_esp32s3.bin` in the dev folders — those names are
-gone; any references in old documentation or scripts should be updated.
+Every channel and chip uses `robot.bin` / `control.bin` for the app partition —
+the chip is already in the path (`s3/…` vs `esp32/…`), so no suffix is needed.
+Older releases used `prima_stem_robot_esp32s3.bin`,
+`robot_prima_stem_esp32.bin` and similar — those names are gone; update any
+references in old documentation or scripts.
 
-## Supported audio locales (17)
+## Supported audio locales (18)
 
-`ca`, `da`, `de`, `en`, `es`, `fr`, `he`, `it`, `ja`, `nb`, `nl`,
+`ar`, `ca`, `da`, `de`, `en`, `es`, `fr`, `he`, `it`, `ja`, `nb`, `nl`,
 `pl`, `pt-BR`, `ru`, `sv`, `tr`, `uk`.
 
-Note: `he` (Hebrew) is RTL — only the audio path uses it, the install
-UI just shows the locale name in the native script.
+Note: `ar` (Arabic) and `he` (Hebrew) are RTL — only the audio path uses the
+code, the install UI just shows the locale name in the native script.
 
-Each is a separate `storage.bin` under `firmware/{robot,control}/s3/{lang}/`.
-Dev firmware (`firmware/development/{robot,control}/storage.bin`) bundles
-English only; the byte-identical EN image is also available in the prod tree.
+Audio is shared, not per-device: one `storage.bin` per language under
+`firmware/s3/audio/{lang}/`. Robot, Control, stable and dev all flash the same
+image — `index.html` swaps the locale at install time.
 
 ## Change log
 
@@ -207,13 +207,13 @@ English only; the byte-identical EN image is also available in the prod tree.
   output file size after every build — preventing silent zero-byte storage
   images.
 
-All previous partition tables archived under
-`firmware/{robot,control}/s3/arhiv/` and
-`firmware/development/{robot,control}/arhiv/`.
+All previous partition tables and dated snapshots archived under
+`firmware/_archive/`.
 
 ## Legacy ESP32 (non-S3) firmware
 
-`firmware/{robot,control}/esp32/` contains older firmware for plain ESP32
-(not S3) boards still in the field. **Not in active development** — kept only
-as an archive so the existing web installer can still flash legacy units.
-Partition maps differ from the S3 layout and are not described here.
+`firmware/esp32/stable/{robot,control}/` contains older firmware for plain
+ESP32 (not S3) boards still in the field. **Not in active development** — kept
+only so the existing web installer can still flash legacy units, and slated for
+removal (~1 year). Partition maps differ from the S3 layout and are not
+described here.
