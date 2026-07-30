@@ -66,3 +66,6 @@ sync_and_build.bat
 
 # Internal docs — do not publish to the repo
 docs/PARTITIONS.md
+
+# Firmware archives & dated snapshots — kept locally, never deployed to GitHub Pages
+firmware/_archive/
