@@ -1,25 +1,26 @@
 {
-    "name": "Robot update",
-    "new_install_prompt_erase": true,
-    "builds": [
-      {
-        "chipFamily": "ESP32",
-        "improv": true,
-        "parts": [
-          { "path": "firmware/robot/esp32/bootloader.bin", "offset": 4096 },
-          { "path": "firmware/robot/esp32/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/robot/esp32/robot_prima_stem_esp32.bin", "offset": 131072 },
-          { "path": "firmware/robot/esp32/storage.bin", "offset": 950272 }
-        ]
-      },
-      {
-        "chipFamily": "ESP32-S3",
-"improv": true,
-               "parts": [
-          { "path": "firmware/robot/s3/bootloader.bin", "offset": 0 },
-          { "path": "firmware/robot/s3/partition-table.bin", "offset": 32768 },
-          { "path": "firmware/robot/s3/robot.bin", "offset": 65536 },
-          { "path": "firmware/robot/s3/en/storage.bin", "offset": 1114112 }
-        ]
-      }    ]
-  }
+  "name": "Robot update",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "improv": true,
+      "parts": [
+        { "path": "firmware/esp32/stable/robot/bootloader.bin", "offset": 4096 },
+        { "path": "firmware/esp32/stable/robot/partition-table.bin", "offset": 32768 },
+        { "path": "firmware/esp32/stable/robot/robot.bin", "offset": 131072 },
+        { "path": "firmware/esp32/stable/robot/storage.bin", "offset": 950272 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "improv": true,
+      "parts": [
+        { "path": "firmware/s3/stable/robot/bootloader.bin", "offset": 0 },
+        { "path": "firmware/s3/stable/robot/partition-table.bin", "offset": 32768 },
+        { "path": "firmware/s3/stable/robot/robot.bin", "offset": 65536 },
+        { "path": "firmware/s3/audio/en/storage.bin", "offset": 1114112 }
+      ]
+    }
+  ]
+}
