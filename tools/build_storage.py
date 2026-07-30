@@ -1,26 +1,26 @@
 #!/usr/bin/env python3
 """
-Generate SPIFFS storage.bin for PrimaSTEM firmware from language source folders.
+Generate the shared SPIFFS storage.bin images for PrimaSTEM firmware from
+language source folders.
 
-ESP32-S3 partition map (unified prod and dev, 14.5 MB as of 2026-05-11):
+The S3 audio partition is identical for robot and control, stable and dev, so
+there is a single shared output tree: firmware/s3/audio/{lang}/storage.bin.
+All four manifests point at it; index.html swaps the locale per user choice.
+
+ESP32-S3 partition map (14.5 MB as of 2026-05-11):
     storage partition: offset 0x110000, size 0x00E80000 (14.5 MB)
 
 Usage:
     python tools/build_storage.py                 # build ALL langs found in source/
     python tools/build_storage.py ru              # build only Russian
     python tools/build_storage.py ru en fr        # build multiple languages
-    python tools/build_storage.py en --dev        # build prod EN + dev EN (both 14.5 MB)
-    python tools/build_storage.py en --dev-only   # build only the dev image (14.5 MB)
 
 Prerequisites:
     Copy spiffsgen.py from ESP-IDF into tools/:
         cp $IDF_PATH/components/spiffs/spiffsgen.py tools/
 
 Output:
-    Prod (S3): firmware/robot/s3/{lang}/storage.bin
-               firmware/control/s3/{lang}/storage.bin
-    Dev  (S3): firmware/development/robot/storage.bin    (single file, no per-lang folder)
-               firmware/development/control/storage.bin
+    firmware/s3/audio/{lang}/storage.bin
 
 Hardening:
     - Fails loudly if spiffsgen returns non-zero (prints stderr).
@@ -36,7 +36,7 @@ REPO_ROOT  = Path(__file__).parent.parent
 SOURCE_DIR = REPO_ROOT / "source"
 SPIFFSGEN  = Path(__file__).parent / "spiffsgen.py"
 
-# ESP32-S3 storage partition size, identical for prod and dev (10 MB)
+# ESP32-S3 storage partition size, 14.5 MB
 S3_PARTITION_SIZE = 0x00E80000
 
 # Must match firmware partition table and menuconfig
@@ -48,14 +48,8 @@ SPIFFS_FLAGS = [
     "--use-magic-len",
 ]
 
-PROD_TARGETS = [
-    "firmware/robot/s3",
-    "firmware/control/s3",
-]
-DEV_TARGETS = [
-    "firmware/development/robot",
-    "firmware/development/control",
-]
+# Single shared S3 audio tree (robot and control, stable and dev, read from here)
+AUDIO_TARGET = "firmware/s3/audio"
 
 
 def run_spiffsgen(size, src_dir, out_file):
@@ -81,23 +75,12 @@ def run_spiffsgen(size, src_dir, out_file):
         )
 
 
-def build_lang_prod(lang):
+def build_lang(lang):
     src = SOURCE_DIR / lang
     if not src.is_dir():
         raise FileNotFoundError("source/{}/ not found".format(lang))
-    for target in PROD_TARGETS:
-        out_file = REPO_ROOT / target / lang / "storage.bin"
-        run_spiffsgen(S3_PARTITION_SIZE, src, out_file)
-
-
-def build_dev(lang):
-    """Dev firmware uses a single storage.bin (no per-language folder)."""
-    src = SOURCE_DIR / lang
-    if not src.is_dir():
-        raise FileNotFoundError("source/{}/ not found".format(lang))
-    for target in DEV_TARGETS:
-        out_file = REPO_ROOT / target / "storage.bin"
-        run_spiffsgen(S3_PARTITION_SIZE, src, out_file)
+    out_file = REPO_ROOT / AUDIO_TARGET / lang / "storage.bin"
+    run_spiffsgen(S3_PARTITION_SIZE, src, out_file)
 
 
 def main():
@@ -107,43 +90,18 @@ def main():
         print("  cp $IDF_PATH/components/spiffs/spiffsgen.py tools/")
         sys.exit(1)
 
-    args = list(sys.argv[1:])
-    dev_mode = False
-    dev_only = False
-    if "--dev-only" in args:
-        dev_only = True
-        dev_mode = True
-        args.remove("--dev-only")
-    if "--dev" in args:
-        dev_mode = True
-        args.remove("--dev")
-
-    langs = args if args else sorted(d.name for d in SOURCE_DIR.iterdir() if d.is_dir())
+    langs = sys.argv[1:] or sorted(d.name for d in SOURCE_DIR.iterdir() if d.is_dir())
     if not langs:
         print("[ERROR] No language folders found in source/")
         sys.exit(1)
 
-    if dev_only:
-        mode_label = "dev only (14.5 MB)"
-    elif dev_mode:
-        mode_label = "prod + dev (14.5 MB)"
-    else:
-        mode_label = "prod (14.5 MB)"
-    print("Mode: " + mode_label)
+    print("Building S3 audio (14.5 MB) into firmware/s3/audio/")
     print("Languages: " + ", ".join(langs))
     print("")
-
     try:
-        if not dev_only:
-            for lang in langs:
-                print("== Building PROD: {} ==".format(lang))
-                build_lang_prod(lang)
-        if dev_mode:
-            dev_lang = langs[-1]
-            if len(langs) > 1:
-                print("[NOTE] dev has no per-language folder; bundling '{}' only.".format(dev_lang))
-            print("== Building DEV: {} ==".format(dev_lang))
-            build_dev(dev_lang)
+        for lang in langs:
+            print("== {} ==".format(lang))
+            build_lang(lang)
         print("")
         print("Done - all output files verified.")
     except Exception as e:
