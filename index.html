@@ -139,10 +139,6 @@
         return (navigator.language || 'en').toLowerCase().slice(0, 2);
       }
 
-      function isDev(device) {
-        return device && device.startsWith('dev');
-      }
-
       // All possible languages — add new ones here as you expand.
       // The page auto-detects which are actually available by probing storage.bin.
       const ALL_LANGS = [
@@ -169,7 +165,7 @@
       async function loadLanguages() {
         const checks = ALL_LANGS.map(async lang => {
           try {
-            const res = await fetch(`./firmware/robot/s3/${lang.code}/storage.bin`, { method: 'HEAD' });
+            const res = await fetch(`./firmware/s3/audio/${lang.code}/storage.bin`, { method: 'HEAD' });
             return res.ok ? lang : null;
           } catch {
             return null;
@@ -210,7 +206,7 @@
 
       async function updateManifest() {
         if (!selectedDevice) return;
-        if (!isDev(selectedDevice) && !selectedLang) return;
+        if (!selectedLang) return;
 
         const button = document.querySelector('esp-web-install-button');
         button.classList.add('invisible');
@@ -220,54 +216,42 @@
           currentBlobUrl = null;
         }
 
-        if (isDev(selectedDevice)) {
-          button.manifest = `./manifest_${selectedDevice}.json`;
-          button.classList.remove('invisible');
-        } else {
-          // Fetch base manifest, patch storage.bin path for selected locale,
-          // serve as Blob URL (paths must be absolute so esp-web-tools resolves
-          // them correctly from a blob: URL instead of relative to page URL).
-          // Falls back to direct manifest if fetch fails (e.g. local file:// testing).
-          try {
-            const response = await fetch(`./manifest_${selectedDevice}.json`);
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-            const data = await response.json();
-            const base = new URL('./', window.location.href).href;
+        // Fetch base manifest, patch storage.bin path for selected locale,
+        // serve as Blob URL (paths must be absolute so esp-web-tools resolves
+        // them correctly from a blob: URL instead of relative to page URL).
+        // Falls back to direct manifest if fetch fails (e.g. local file:// testing).
+        try {
+          const response = await fetch(`./manifest_${selectedDevice}.json`);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const data = await response.json();
+          const base = new URL('./', window.location.href).href;
 
-            for (const build of data.builds) {
-              for (const part of build.parts) {
-                part.path = new URL(part.path, base).href;
-                if (build.chipFamily === 'ESP32-S3') {
-                  part.path = part.path.replace(/\/[a-z]{2}(?:-[A-Z]{2,3})?\/storage\.bin/, `/${selectedLang}/storage.bin`);
-                }
+          for (const build of data.builds) {
+            for (const part of build.parts) {
+              part.path = new URL(part.path, base).href;
+              if (build.chipFamily === 'ESP32-S3') {
+                part.path = part.path.replace(/\/[a-z]{2}(?:-[A-Z]{2,3})?\/storage\.bin/, `/${selectedLang}/storage.bin`);
               }
             }
-
-            const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
-            currentBlobUrl = URL.createObjectURL(blob);
-            button.manifest = currentBlobUrl;
-          } catch (err) {
-            console.warn('Dynamic manifest failed, using default:', err);
-            button.manifest = `./manifest_${selectedDevice}.json`;
           }
-          button.classList.remove('invisible');
+
+          const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+          currentBlobUrl = URL.createObjectURL(blob);
+          button.manifest = currentBlobUrl;
+        } catch (err) {
+          console.warn('Dynamic manifest failed, using default:', err);
+          button.manifest = `./manifest_${selectedDevice}.json`;
         }
+        button.classList.remove('invisible');
       }
 
       // Device selection
       document.querySelectorAll('input[name="device"]').forEach(radio =>
         radio.addEventListener('change', () => {
           selectedDevice = radio.value;
-          const langStep = document.getElementById('lang-step');
-          const connectLabel = document.getElementById('connect-label');
-
-          if (isDev(selectedDevice)) {
-            langStep.classList.add('hidden');
-            connectLabel.textContent = '3. Hit button (Connect) BELOW and select the correct USB-COM port. (Requires Chrome or Edge.)';
-          } else {
-            langStep.classList.remove('hidden');
-            connectLabel.textContent = '4. Hit button (Connect) BELOW and select the correct USB-COM port. (Requires Chrome or Edge.)';
-          }
+          document.getElementById('lang-step').classList.remove('hidden');
+          document.getElementById('connect-label').textContent =
+            '4. Hit button (Connect) BELOW and select the correct USB-COM port. (Requires Chrome or Edge.)';
           updateManifest();
         })
       );
