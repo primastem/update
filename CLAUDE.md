@@ -27,26 +27,22 @@ Each manifest defines firmware `builds` per `chipFamily` (ESP32 or ESP32-S3), li
 ### Firmware directory layout
 ```
 firmware/
-├── robot/
-│   ├── esp32/          # bootloader.bin, partition-table.bin, robot_prima_stem_esp32.bin, storage.bin
-│   └── s3/             # bootloader.bin, partition-table.bin, prima_stem_robot.bin
-│       ├── en/storage.bin
-│       ├── fr/storage.bin
-│       ├── ru/storage.bin
-│       └── arhiv/      # dated archive of past releases
-├── control/
-│   ├── esp32/          # bootloader.bin, partition-table.bin, control_prima_stem_esp32.bin
-│   └── s3/             # bootloader.bin, partition-table.bin, prima_stem_controll.bin
-│       ├── en/storage.bin
-│       ├── fr/storage.bin
-│       ├── ru/storage.bin
-│       └── arhiv/
-└── development/
-    ├── robot/          # ESP32-S3 dev builds
-    └── control/        # ESP32-S3 dev builds
+├── s3/
+│   ├── stable/{robot,control}/       # bootloader.bin, partition-table.bin, {robot,control}.bin
+│   ├── development/{robot,control}/   # ESP32-S3 dev/test builds (same three files)
+│   └── audio/{lang}/storage.bin       # shared localized audio, 18 languages (14.5 MB each)
+├── esp32/                             # legacy ESP32 (non-S3), slated for removal ~1 year
+│   └── stable/
+│       ├── robot/                     # bootloader.bin, partition-table.bin, robot.bin, storage.bin
+│       └── control/                   # bootloader.bin, partition-table.bin, control.bin
+└── _archive/                          # archived releases, old partition tables, dated snapshots
 ```
 
-**Important**: The production S3 manifests currently point to `en/storage.bin` (English locale). Localized `fr/` and `ru/` variants exist but are not wired into the manifests.
+Layout rule: `firmware/{chip}/{stable|development}/{device}/`. Audio is pulled
+out to `firmware/s3/audio/{lang}/` because it is byte-identical across all
+devices and channels — one image instead of 38.
+
+**Important**: All four S3 manifests point at the same base `firmware/s3/audio/en/storage.bin`. `index.html` fetches the manifest, rewrites that path to the selected locale (regex swap `en` → chosen `{lang}`), and serves it as a Blob URL. The language selector is shown for all devices, including dev. ESP32 `storage.bin` (robot only) is NOT localized and is not rewritten.
 
 ### Memory offsets (critical — do not change without verifying against the firmware build)
 - ESP32 bootloader: `0x1000` (4096)
@@ -60,10 +56,11 @@ firmware/
 ### Adding/updating firmware
 1. Drop new `.bin` files into the appropriate `firmware/` subdirectory
 2. Update the corresponding manifest JSON — verify `path` and `offset` values match the ESP-IDF build output
-3. Archive the old `.bin` in the relevant `arhiv/` folder if needed
+3. Run `python tools/verify_manifests.py` — confirms every manifest path exists and every language has its audio image
+4. Archive the old `.bin` under `firmware/_archive/` if needed
 
-### Switching localization for S3 production builds
-Change the `storage.bin` path in `manifest_robot.json` or `manifest_control.json` from `en/` to `fr/` or `ru/`.
+### Adding/rebuilding audio
+Drop MP3s into `source/{lang}/`, run `python tools/build_storage.py {lang}` (or no arg for all). Output goes to the shared `firmware/s3/audio/{lang}/storage.bin`. Add the language to `ALL_LANGS` in `index.html` so the site offers it.
 
 ### Deploying
 Push to `main` — GitHub Pages auto-deploys. The site lives at `https://update.primastem.com`.
