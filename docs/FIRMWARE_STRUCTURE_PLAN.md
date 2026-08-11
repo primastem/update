@@ -16,7 +16,7 @@
 - **18 языков:** ar, ca, da, de, en, es, fr, he, it, ja, nb, nl, pl, pt-BR, ru, sv, tr, uk.
 - **`audio/` не делится на robot/control** — сразу языки.
 - Работать через `git mv` (сохраняет историю), не через delete+add.
-- Спека: `docs/superpowers/specs/2026-07-30-firmware-structure-redesign-design.md`.
+- Спека: `docs/FIRMWARE_STRUCTURE_DESIGN.md`.
 
 ---
 
