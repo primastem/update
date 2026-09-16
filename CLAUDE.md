@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+**16.09.2026, заметка для сессии, работающей со звуком:** каналы переименованы
+(development → rc, добавлен experimental), манифесты devrobot/devcontrol →
+rcrobot/rccontrol (+ exprobot/expcontrol), в index.html изменён список устройств
+и добавлен показ версий; блок ALL_LANGS и логика языков не тронуты.
+Перед следующей правкой index.html сделай `git pull`.
+
 ## Project Overview
 
 Static firmware update web app for **PrimaSTEM** robotics devices (ESP32 and ESP32-S3), deployed via GitHub Pages at `update.primastem.com`. No build process — all changes deploy on push to `main`.
@@ -11,25 +17,31 @@ Static firmware update web app for **PrimaSTEM** robotics devices (ESP32 and ESP
 ### Single-page app (`index.html`)
 - Uses [`esp-web-tools`](https://github.com/esphome/esp-web-tools) v10 from CDN (`unpkg.com`) for WebUSB-based device flashing
 - A radio button group sets `button.manifest` on the `<esp-web-install-button>` element
-- Four device types: `robot`, `control`, `devrobot`, `devcontrol`
-- Each maps to a manifest file: `manifest_{type}.json`
+- Six device entries: `robot`, `control`, `rcrobot`, `rccontrol`, `exprobot`, `expcontrol`
+- Each maps to a manifest file: `manifest_{type}.json` — the radio `value` IS the manifest suffix
+- Each entry carries a `<span class="ver" data-path="...">`; on load the page range-fetches
+  bytes 32–191 of that `.bin`, checks the `esp_app_desc_t` magic `0xABCD5432` and prints
+  `version · date`. A failed fetch leaves the span empty and throws nothing.
 
 ### Manifest files (JSON)
 Each manifest defines firmware `builds` per `chipFamily` (ESP32 or ESP32-S3), listing binary `parts` with memory `offset` values:
 
-| Manifest | Device | Chips |
-|---|---|---|
-| `manifest_robot.json` | Robot (production) | ESP32, ESP32-S3 |
-| `manifest_control.json` | Control board (production) | ESP32, ESP32-S3 |
-| `manifest_devrobot.json` | Robot (dev/test) | ESP32-S3 only |
-| `manifest_devcontrol.json` | Control board (dev/test) | ESP32-S3 only |
+| Manifest | Device | Channel | Chips |
+|---|---|---|---|
+| `manifest_robot.json` | Robot | stable | ESP32, ESP32-S3 |
+| `manifest_control.json` | Control board | stable | ESP32, ESP32-S3 |
+| `manifest_rcrobot.json` | Robot | rc | ESP32-S3 only |
+| `manifest_rccontrol.json` | Control board | rc | ESP32-S3 only |
+| `manifest_exprobot.json` | Robot | experimental | ESP32-S3 only |
+| `manifest_expcontrol.json` | Control board | experimental | ESP32-S3 only |
 
 ### Firmware directory layout
 ```
 firmware/
 ├── s3/
-│   ├── stable/{robot,control}/       # bootloader.bin, partition-table.bin, {robot,control}.bin
-│   ├── development/{robot,control}/   # ESP32-S3 dev/test builds (same three files)
+│   ├── stable/{robot,control}/        # bootloader.bin, partition-table.bin, {robot,control}.bin
+│   ├── rc/{robot,control}/            # release candidates (same three files)
+│   ├── experimental/{robot,control}/  # hypothesis-testing builds (same three files)
 │   └── audio/{lang}/storage.bin       # shared localized audio, 18 languages (14.5 MB each)
 ├── esp32/                             # legacy ESP32 (non-S3), slated for removal ~1 year
 │   └── stable/
@@ -38,11 +50,16 @@ firmware/
 └── _archive/                          # archived releases, old partition tables, dated snapshots
 ```
 
-Layout rule: `firmware/{chip}/{stable|development}/{device}/`. Audio is pulled
-out to `firmware/s3/audio/{lang}/` because it is byte-identical across all
+Layout rule: `firmware/{chip}/{stable|rc|experimental}/{device}/`. Audio is
+pulled out to `firmware/s3/audio/{lang}/` because it is byte-identical across all
 devices and channels — one image instead of 38.
 
-**Important**: All four S3 manifests point at the same base `firmware/s3/audio/en/storage.bin`. `index.html` fetches the manifest, rewrites that path to the selected locale (regex swap `en` → chosen `{lang}`), and serves it as a Blob URL. The language selector is shown for all devices, including dev. ESP32 `storage.bin` (robot only) is NOT localized and is not rewritten.
+Three channels:
+- **stable** — production. **Owner-only: never write into `firmware/s3/stable/`.**
+- **rc** — release candidate, a build that passed acceptance and waits to become stable.
+- **experimental** — builds that test a hypothesis; may break.
+
+**Important**: All six S3 manifests point at the same base `firmware/s3/audio/en/storage.bin`. `index.html` fetches the manifest, rewrites that path to the selected locale (regex swap `en` → chosen `{lang}`), and serves it as a Blob URL. The language selector is shown for all devices, in every channel. ESP32 `storage.bin` (robot only) is NOT localized and is not rewritten.
 
 ### Memory offsets (critical — do not change without verifying against the firmware build)
 - ESP32 bootloader: `0x1000` (4096)

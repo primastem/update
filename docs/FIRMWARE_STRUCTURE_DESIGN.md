@@ -70,8 +70,8 @@ S3-манифеста ссылаются на один базовый `s3/audio/
 | | S3 | `s3/stable/robot/bootloader.bin`@0 · `partition-table.bin`@32768 · `robot.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
 | `manifest_control` | ESP32 | `esp32/stable/control/bootloader.bin`@4096 · `partition-table.bin`@32768 · `control.bin`@65536 |
 | | S3 | `s3/stable/control/bootloader.bin`@0 · `partition-table.bin`@32768 · `control.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
-| `manifest_devrobot` | S3 | `s3/development/robot/bootloader.bin`@0 · `partition-table.bin`@32768 · `robot.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
-| `manifest_devcontrol` | S3 | `s3/development/control/bootloader.bin`@0 · `partition-table.bin`@32768 · `control.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
+| `manifest_rcrobot` | S3 | `s3/rc/robot/bootloader.bin`@0 · `partition-table.bin`@32768 · `robot.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
+| `manifest_rccontrol` | S3 | `s3/rc/control/bootloader.bin`@0 · `partition-table.bin`@32768 · `control.bin`@65536 · `s3/audio/en/storage.bin`@1114112 |
 
 Robot ESP32 сохраняет несимметричный app-offset `131072` — он реальный, не трогаем.
 

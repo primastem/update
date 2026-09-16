@@ -55,6 +55,10 @@
         border-top: 1px solid #ccc;
         margin: 8px 0;
       }
+      .radios .ver {
+        color: #888;
+        font-size: 0.8em;
+      }
       /* Step blocks */
       .step {
         margin-top: 1.5em;
@@ -101,11 +105,14 @@
       <div class="step">
         <div class="step-label">2. Select device:</div>
         <ul class="radios">
-          <li><label><input type="radio" name="device" value="robot" /> Robot</label></li>
-          <li><label><input type="radio" name="device" value="control" /> Control board</label></li>
+          <li><label><input type="radio" name="device" value="robot" /> Robot</label> <span class="ver" data-path="firmware/s3/stable/robot/robot.bin"></span></li>
+          <li><label><input type="radio" name="device" value="control" /> Control board</label> <span class="ver" data-path="firmware/s3/stable/control/control.bin"></span></li>
           <li><hr class="separator"></li>
-          <li><label><input type="radio" name="device" value="devrobot" /> Robot — development test version</label></li>
-          <li><label><input type="radio" name="device" value="devcontrol" /> Control board — development test version</label></li>
+          <li><label><input type="radio" name="device" value="rcrobot" /> Robot — release candidate (RC)</label> <span class="ver" data-path="firmware/s3/rc/robot/robot.bin"></span></li>
+          <li><label><input type="radio" name="device" value="rccontrol" /> Control board — release candidate (RC)</label> <span class="ver" data-path="firmware/s3/rc/control/control.bin"></span></li>
+          <li><hr class="separator"></li>
+          <li><label><input type="radio" name="device" value="exprobot" /> Robot — experimental build</label> <span class="ver" data-path="firmware/s3/experimental/robot/robot.bin"></span></li>
+          <li><label><input type="radio" name="device" value="expcontrol" /> Control board — experimental build</label> <span class="ver" data-path="firmware/s3/experimental/control/control.bin"></span></li>
         </ul>
       </div>
 
@@ -256,6 +263,46 @@
           updateManifest();
         })
       );
+
+      // Firmware version next to each device: read esp_app_desc_t from the app
+      // image (magic + version + build date live at offset 0x20).
+      const APP_DESC_MAGIC = 0xabcd5432;
+
+      function cString(bytes) {
+        const end = bytes.indexOf(0);
+        return new TextDecoder().decode(end === -1 ? bytes : bytes.subarray(0, end));
+      }
+
+      async function readAppDesc(path) {
+        const res = await fetch(`./${path}`, { headers: { Range: 'bytes=32-191' } });
+        if (!res.ok) return null;
+        const body = new Uint8Array(await res.arrayBuffer());
+        // 206 = only the requested range; a server that ignores Range answers 200
+        // with the whole file, so skip the first 32 bytes ourselves.
+        const desc = res.status === 206 ? body : body.subarray(32);
+        if (desc.length < 160) return null;
+        const magic = new DataView(desc.buffer, desc.byteOffset, 4).getUint32(0, true);
+        if (magic !== APP_DESC_MAGIC) return null;
+        return {
+          version: cString(desc.subarray(16, 48)),   // 0x30 - 0x20
+          date: cString(desc.subarray(96, 112)),     // 0x80 - 0x20
+        };
+      }
+
+      function loadVersions() {
+        document.querySelectorAll('span.ver[data-path]').forEach(async span => {
+          try {
+            const info = await readAppDesc(span.dataset.path);
+            if (info && info.version) {
+              span.textContent = info.date ? `${info.version} · ${info.date}` : info.version;
+            }
+          } catch (e) {
+            // missing file, offline or local file:// — leave the label empty
+          }
+        });
+      }
+
+      loadVersions();
 
       // Load language list and build selector
       loadLanguages().then(buildLangGrid);
