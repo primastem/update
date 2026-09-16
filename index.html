@@ -56,8 +56,9 @@
         margin: 8px 0;
       }
       .radios .ver {
-        color: #888;
+        color: #aaa;
         font-size: 0.8em;
+        margin-left: 0.4em;
       }
       /* Step blocks */
       .step {
@@ -294,7 +295,7 @@
           try {
             const info = await readAppDesc(span.dataset.path);
             if (info && info.version) {
-              span.textContent = info.date ? `${info.version} · ${info.date}` : info.version;
+              span.textContent = info.date ? `(${info.version}, ${info.date})` : `(${info.version})`;
             }
           } catch (e) {
             // missing file, offline or local file:// — leave the label empty
