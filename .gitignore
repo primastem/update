@@ -69,3 +69,8 @@ docs/PARTITIONS.md
 
 # Firmware archives & dated snapshots — kept locally, never deployed to GitHub Pages
 firmware/_archive/
+
+# wrangler (Cloudflare Workers static assets)
+node_modules/
+.wrangler/
+.dev.vars

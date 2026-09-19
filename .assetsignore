@@ -1,0 +1,22 @@
+# Cloudflare Workers static assets: what NOT to upload (same syntax as .gitignore).
+# Without this wrangler tried to ship .git/ and hit the 25 MiB per-file limit (19.09.2026).
+.git
+.github
+.claude
+.remember
+.impeccable
+.history
+docs
+tools
+source
+temp
+node_modules
+.wrangler
+sync_and_build.bat
+CLAUDE.md
+README.md
+.gitignore
+.gitattributes
+.assetsignore
+wrangler.jsonc
+firmware/_archive
