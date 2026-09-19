@@ -100,7 +100,7 @@
       <h1>Update PrimaSTEM firmware</h1>
 
       <div class="step">
-        <p>1. Using Chrome or Edge, plug in your device to a USB port (make sure your USB-C cable supports data transfer).</p>
+        <p>1. Open this page in Chrome or Edge. Plug the device into a USB port. Use a cable that transfers data, not a charge-only one.</p>
       </div>
 
       <div class="step">
@@ -125,7 +125,7 @@
       </div>
 
       <div class="step">
-        <p id="connect-label">3. Hit button (Connect) BELOW and select the correct USB-COM port. Looks as USB JTAG/serial debug unit (COM...).</p>
+        <p id="connect-label">3. Click the Connect button below. In the pop-up window, choose the line that says "USB JTAG/serial debug unit (COM...)".</p>
         <p>
           <esp-web-install-button class="invisible"></esp-web-install-button>
         </p>
@@ -260,7 +260,7 @@
           selectedDevice = radio.value;
           document.getElementById('lang-step').classList.remove('hidden');
           document.getElementById('connect-label').textContent =
-            '4. Hit button (Connect) BELOW and select the correct USB-COM port. Looks as USB JTAG/serial debug unit (COM...).';
+            '4. Click the Connect button below. In the pop-up window, choose the line that says "USB JTAG/serial debug unit (COM...)".';
           updateManifest();
         })
       );
