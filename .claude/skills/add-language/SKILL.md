@@ -25,7 +25,7 @@ MP3-исходники живут в TTS-пайплайне (отдельный 
 `output_norm/{lang}/`:
 
 ```
-C:/Users/andrei/Documents/Claude/Projects/tts-localization/output_norm/{lang}
+D:/Users/andrei/Documents/Claude/Projects/tts-localization/output_norm/{lang}
 ```
 
 Прежде чем копировать — **сверь комплект с эталоном** `source/en`. Прошивка обращается
@@ -33,7 +33,7 @@ C:/Users/andrei/Documents/Claude/Projects/tts-localization/output_norm/{lang}
 эти звуки на устройстве промолчат. Лишние файлы в новом языке — не проблема.
 
 ```bash
-SRC="C:/Users/andrei/Documents/Claude/Projects/tts-localization/output_norm/{lang}"
+SRC="D:/Users/andrei/Documents/Claude/Projects/tts-localization/output_norm/{lang}"
 echo "только в en, НЕТ в {lang} (это плохо, если непусто):"
 comm -23 <(cd source/en && ls | sort) <(cd "$SRC" && ls | sort) | tr '\n' ' '; echo
 echo "только в {lang}, нет в en (это норм):"
