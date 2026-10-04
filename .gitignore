@@ -74,3 +74,7 @@ firmware/_archive/
 node_modules/
 .wrangler/
 .dev.vars
+
+# Claude: личная память и локальные настройки — только на этой машине
+.claude/memory/
+.claude/settings.local.json
