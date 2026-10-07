@@ -26,6 +26,11 @@
         margin: 0 auto;
         padding: 12px;
       }
+      .erase-warning {
+        border-left: 4px solid #e0a800;
+        background: rgba(224, 168, 0, 0.12);
+        padding: 8px 12px;
+      }
       a {
         color: #5aa02c;
       }
@@ -126,6 +131,7 @@
 
       <div class="step">
         <p id="connect-label">3. Click the Connect button below. In the pop-up window, choose the line that says "USB JTAG/serial debug unit (COM...)".</p>
+        <p class="erase-warning">Leave "Erase device" unchecked. A normal update does not need it. Erasing wipes calibration and the pairing between robot and control board. Use it only if PrimaSTEM support asks you to.</p>
         <p>
           <esp-web-install-button class="invisible"></esp-web-install-button>
         </p>
