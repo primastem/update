@@ -86,23 +86,69 @@
         line-height: 2em;
         min-width: 160px;
       }
+      /* Theme: follows the system unless the user picked one (data-theme on <html>) */
       @media (prefers-color-scheme: dark) {
-        body {
+        :root:not([data-theme="light"]) body {
           background-color: #333;
           color: #fff;
         }
-        a {
-          color: #5aa02c;
-        }
-        .radios .separator {
+        :root:not([data-theme="light"]) .radios .separator {
           border-top-color: #555;
         }
       }
+      :root[data-theme="dark"] {
+        color-scheme: dark;
+      }
+      :root[data-theme="dark"] body {
+        background-color: #333;
+        color: #fff;
+      }
+      :root[data-theme="dark"] .radios .separator {
+        border-top-color: #555;
+      }
+      :root[data-theme="light"] {
+        color-scheme: light;
+      }
+      :root[data-theme="light"] body {
+        background-color: #fff;
+        color: #000;
+      }
+      .content {
+        position: relative;
+      }
+      h1 {
+        padding-right: 40px;
+      }
+      .theme-toggle {
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 32px;
+        height: 32px;
+        padding: 0;
+        border: 1px solid rgba(128, 128, 128, 0.4);
+        border-radius: 50%;
+        background: none;
+        color: inherit;
+        font-size: 16px;
+        line-height: 1;
+        cursor: pointer;
+      }
+      .theme-toggle:hover {
+        border-color: rgba(128, 128, 128, 0.8);
+      }
     </style>
+    <script>
+      try {
+        var savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'light' || savedTheme === 'dark') document.documentElement.dataset.theme = savedTheme;
+      } catch (e) {}
+    </script>
     <script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
   </head>
   <body>
     <div class="content">
+      <button class="theme-toggle" id="theme-toggle" type="button" title="Switch light / dark theme" aria-label="Switch light / dark theme"></button>
       <h1>Update PrimaSTEM firmware</h1>
 
       <div class="step">
@@ -146,6 +192,22 @@
     </div>
 
     <script>
+      // Theme toggle: system theme by default; a manual pick is saved in localStorage
+      (function () {
+        const btn = document.getElementById('theme-toggle');
+        const root = document.documentElement;
+        const systemDark = matchMedia('(prefers-color-scheme: dark)');
+        const isDark = () => root.dataset.theme ? root.dataset.theme === 'dark' : systemDark.matches;
+        const render = () => { btn.textContent = isDark() ? '☀︎' : '☾︎'; };
+        btn.addEventListener('click', () => {
+          root.dataset.theme = isDark() ? 'light' : 'dark';
+          try { localStorage.setItem('theme', root.dataset.theme); } catch (e) {}
+          render();
+        });
+        systemDark.addEventListener('change', render);
+        render();
+      })();
+
       let currentBlobUrl = null;
       let selectedDevice = null;
       let selectedLang = null;
